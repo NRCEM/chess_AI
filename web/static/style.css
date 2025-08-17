@@ -1,0 +1,156 @@
+/* -------- Base layout -------- */
+:root {
+    --light: #eeeed2;
+    /* màu ô sáng */
+    --dark: #769656;
+    /* màu ô tối  */
+    --hi: rgba(255, 215, 0, 0.9);
+    /* highlight ô đang chọn */
+    --mv: rgba(70, 130, 180, 0.9);
+    /* ô đi được */
+    --cap: rgba(220, 20, 60, 0.9);
+    /* ô có thể bắt quân */
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+}
+
+body {
+    margin: 0;
+    padding: 16px;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #fff;
+    color: #111;
+}
+
+/* -------- Board grid (responsive) -------- */
+/* Bảng cờ luôn là hình vuông. Ưu tiên 480px, thu nhỏ trên màn nhỏ. */
+.board {
+    width: min(90vw, 520px);
+    aspect-ratio: 1 / 1;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    border: 2px solid #333;
+    border-radius: 8px;
+    overflow: hidden;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+/* Mỗi ô là 1 flexbox để căn giữa quân */
+.square {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color .08s ease;
+}
+
+/* Tô màu xen kẽ: class đã set sẵn từ JS (light/dark) */
+.square.light {
+    background: var(--light);
+}
+
+.square.dark {
+    background: var(--dark);
+}
+
+/* -------- Highlights -------- */
+/* Ô đang chọn */
+.square.highlight {
+    box-shadow: inset 0 0 0 3px var(--hi);
+}
+
+/* Ô đi được (không ăn) */
+.square.move {
+    box-shadow: inset 0 0 0 3px var(--mv);
+}
+
+/* Ô có thể bắt quân */
+.square.capture {
+    box-shadow: inset 0 0 0 3px var(--cap);
+}
+
+/* Hover nhẹ nhàng để thấy đang trỏ vào đâu */
+.square:hover {
+    filter: brightness(1.03);
+}
+
+/* -------- Piece images / emoji fallback -------- */
+.piece {
+    width: 88%;
+    height: 88%;
+    object-fit: contain;
+    pointer-events: none;
+    /* để click trúng ô, không trúng ảnh */
+    transition: transform .12s ease;
+}
+
+/* Khi re-render, cho quân “khẽ nhúc nhích” nhìn đỡ thô */
+.square .piece {
+    transform: translateZ(0);
+}
+
+/* Nếu fallback emoji (div text) thì font to lên */
+.square>.emoji {
+    font-size: clamp(22px, 6vw, 40px);
+    line-height: 1;
+    pointer-events: none;
+}
+
+/* -------- Panel dưới bàn cờ -------- */
+.panel {
+    margin-top: 12px;
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.panel input {
+    width: 110px;
+    padding: 8px 10px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    font: inherit;
+}
+
+.panel button {
+    padding: 8px 12px;
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #111;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+}
+
+.panel button:hover {
+    filter: brightness(1.1);
+}
+
+#msg {
+    color: #b00020;
+}
+
+/* -------- Optional: animation nhẹ khi cập nhật -------- */
+/* Nếu muốn, JS có thể add class .just-moved cho ô đích để chớp nhẹ */
+.square.just-moved {
+    animation: blink 300ms ease;
+}
+
+@keyframes blink {
+    from {
+        box-shadow: inset 0 0 0 6px rgba(255, 255, 0, .75);
+    }
+
+    to {
+        box-shadow: inset 0 0 0 0 rgba(255, 255, 0, 0);
+    }
+}
