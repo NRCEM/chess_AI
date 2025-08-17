@@ -1,4 +1,4 @@
-from game import init_board, print_board, make_move, undo_move
+from chess_game import init_board, print_board, make_move, undo_move
 
 
 def main():

@@ -1,8 +1,11 @@
 # Chess_AI
 
-This is my personal project to build a simple chess AI from scratch.  
-The main goal is to create a console-based chess game where I can play against the AI,  
+- This is my personal project to build a simple chess AI from scratch.  
+- The main goal is to create a web chess game where I can play against the AI,  
 and then gradually improve it.
+- It currently can runs in two modes:
++ Console mode (local testing).
++ Web mode (Flask backend + HTML/CSS/JS frontend).
 
 ## Current status
 - Basic board setup.

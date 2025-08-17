@@ -147,7 +147,7 @@ def is_valid_king(board, cr, cc, nr, nc):
 # =========================
 # Dispatcher and wrapper
 # =========================
-def is_valid_move(board, cr, cc, nr, nc):
+def is_valid_move(board, cr, cc, nr, nc, side):
     """Dispatch validator based on the piece at (cr, cc)."""
     if not (in_bounds(cr, cc) and in_bounds(nr, nc)):
         return False
@@ -169,7 +169,11 @@ def is_valid_move(board, cr, cc, nr, nc):
         "K": is_valid_king,
         "k": is_valid_king,
     }
-    if piece in validators:
-        return validators[piece](board, cr, cc, nr, nc)
-    else:
-        return False
+    if (piece in white_pieces and side == "white") or (
+        piece in black_pieces and side == "black"
+    ):
+
+        if piece in validators:
+            return validators[piece](board, cr, cc, nr, nc)
+        else:
+            return False

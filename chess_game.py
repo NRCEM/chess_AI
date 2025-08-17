@@ -16,7 +16,18 @@ def init_board():
     return board
 
 
+board = init_board()
+_turn = "white"
+castle_rights = {
+    "white": {"K": True, "Q": True},
+    "black": {"K": True, "Q": True},
+}
+en_passant = None
 move_history = []
+
+
+def whose_turn():
+    return _turn
 
 
 # Print the board
@@ -39,8 +50,9 @@ def parse_move(move):
 
 # Execute the move
 def make_move(board, move):
+    global _turn
     cr, cc, nr, nc = parse_move(move)  # cur_row, cur_col, next_row, next_col
-    if not is_valid_move(board, cr, cc, nr, nc):
+    if not is_valid_move(board, cr, cc, nr, nc, _turn):
         raise ValueError("Invalid move")
 
     piece = board[cr][cc]
@@ -52,13 +64,16 @@ def make_move(board, move):
     move_history.append(
         {"cr": cr, "cc": cc, "nr": nr, "nc": nc, "piece": piece, "captured": captured}
     )
+    _turn = "black" if _turn == "white" else "white"
     return board
 
 
 def undo_move(board):
+    global _turn
     if not move_history:
         raise ValueError("No moves to undo")
     rec = move_history.pop()
     board[rec["cr"]][rec["cc"]] = rec["piece"]
     board[rec["nr"]][rec["nc"]] = rec["captured"]
+    _turn = "black" if _turn == "white" else "white"
     return board

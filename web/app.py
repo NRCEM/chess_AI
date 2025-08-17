@@ -1,9 +1,8 @@
 from flask import Flask, request, jsonify
 import os, sys, traceback
 
-# Cho phép import game.py / rules.py / utils.py ở thư mục gốc
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-import game, rules
+import chess_game, rules
 
 app = Flask(__name__, static_folder="static", static_url_path="/static")
 
@@ -26,7 +25,7 @@ def index():
 
 @app.get("/state")
 def state():
-    return jsonify({"board": game.board, "turn": game.whose_turn()})
+    return jsonify({"board": chess_game.board, "turn": chess_game.whose_turn()})
 
 
 @app.get("/moves")
@@ -35,13 +34,13 @@ def moves():
     if len(sq) != 2:
         return jsonify({"ok": False, "error": "from=? like e2"}), 400
     cr, cc = from_sq(sq)
-    side = game.whose_turn()
+    side = chess_game.whose_turn()
     legal = []
     for nr in range(8):
         for nc in range(8):
-            ok = rules.is_valid_move(game.board, cr, cc, nr, nc, side)
+            ok = rules.is_valid_move(chess_game.board, cr, cc, nr, nc, side)
             if ok:
-                capture = game.board[nr][nc] != "."
+                capture = chess_game.board[nr][nc] != "."
                 legal.append({"to": to_sq(nr, nc), "capture": capture})
     return jsonify({"ok": True, "moves": legal})
 
@@ -53,7 +52,7 @@ def move():
     if len(mv) != 4:
         return jsonify({"ok": False, "error": "move must be UCI like e2e4"}), 400
     try:
-        game.make_move(game.board, mv)
+        chess_game.make_move(chess_game.board, mv)
         return jsonify({"ok": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 400
@@ -62,12 +61,11 @@ def move():
 @app.post("/undo")
 def undo():
     try:
-        game.undo_move(game.board)  # gọi engine
+        chess_game.undo_move(chess_game.board)
         return jsonify({"ok": True})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)}), 400
 
 
 if __name__ == "__main__":
-    # chạy local
     app.run(host="0.0.0.0", port=5000, debug=True)

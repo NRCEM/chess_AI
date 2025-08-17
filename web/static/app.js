@@ -1,7 +1,7 @@
-// ----- config -----
-const STATIC = "/static";  // vì app.py dùng static_url_path="/static"
+// ----- Config -----
+const STATIC = "/static";  // static folder path
 
-// Map quân cờ -> đường dẫn ảnh
+// Piece images
 const pieceImg = {
     "P": `${STATIC}/img/wP.svg`, "R": `${STATIC}/img/wR.svg`, "N": `${STATIC}/img/wN.svg`,
     "B": `${STATIC}/img/wB.svg`, "Q": `${STATIC}/img/wQ.svg`, "K": `${STATIC}/img/wK.svg`,
@@ -9,28 +9,28 @@ const pieceImg = {
     "b": `${STATIC}/img/bB.svg`, "q": `${STATIC}/img/bQ.svg`, "k": `${STATIC}/img/bK.svg`,
 };
 
-// Emoji fallback nếu chưa có ảnh
+// Fallback emojis if image not found
 const fallbackEmoji = {
     "P": "♙", "R": "♖", "N": "♘", "B": "♗", "Q": "♕", "K": "♔",
     "p": "♟︎", "r": "♜", "n": "♞", "b": "♝", "q": "♛", "k": "♚"
 };
 
-// ----- DOM refs -----
+// ----- DOM references -----
 const boardEl = document.getElementById("board");
 const msgEl = document.getElementById("msg");
 
-// ----- state -----
+// ----- State -----
 const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
 let state = { board: [], turn: "white" };
-let selected = null;        // "e2"
+let selected = null;        // currently selected square, e.g. "e2"
 let legal = [];             // [{to:"e4", capture:true}, ...]
-let lastMoveTo = null;      // để chớp nhẹ ô mới di chuyển
+let lastMoveTo = null;
 
 // Helpers
 function sq(r, c) { return files[c] + (8 - r); }
 function rc(s) { return [8 - parseInt(s[1], 10), files.indexOf(s[0])] }
 
-// Load state và vẽ
+// Load board state from server
 async function loadState() {
     try {
         const r = await fetch("/state");
@@ -43,6 +43,7 @@ async function loadState() {
     }
 }
 
+// Draw the board
 function draw() {
     boardEl.innerHTML = "";
     for (let r = 0; r < 8; r++) {
@@ -57,7 +58,6 @@ function draw() {
             if (mv) div.classList.add(mv.capture ? "capture" : "move");
             if (lastMoveTo === name) {
                 div.classList.add("just-moved");
-                // remove after animation to avoid piling up classes
                 setTimeout(() => div.classList.remove("just-moved"), 300);
             }
 
@@ -67,7 +67,6 @@ function draw() {
                 img.className = "piece";
                 img.alt = p;
                 img.src = pieceImg[p] || "";
-                // Fallback emoji nếu ảnh fail hoặc chưa có file
                 img.onerror = () => {
                     const e = document.createElement("div");
                     e.className = "emoji";
@@ -83,9 +82,9 @@ function draw() {
     }
 }
 
+// Handle click on board
 async function onClick(name) {
     msgEl.textContent = "";
-    // Nếu đang chọn và ô click là đích hợp lệ -> đi luôn
     const mv = legal.find(m => m.to === name);
     if (selected && mv) {
         const uci = selected + name;
@@ -97,13 +96,11 @@ async function onClick(name) {
         }
         return;
     }
-    // Bỏ chọn nếu bấm lại ô cũ
     if (selected === name) {
         selected = null; legal = [];
         draw();
         return;
     }
-    // Chọn quân mới: phải đúng màu đang tới lượt
     const [r, c] = rc(name);
     const p = state.board[r][c];
     if (p === ".") { selected = null; legal = []; draw(); return; }
@@ -116,6 +113,7 @@ async function onClick(name) {
     draw();
 }
 
+// Ask server for legal moves
 async function fetchMoves(fromSq) {
     try {
         const r = await fetch(`/moves?from=${fromSq}`);
@@ -129,6 +127,7 @@ async function fetchMoves(fromSq) {
     }
 }
 
+// Execute a move
 async function doMove(uci) {
     try {
         const r = await fetch("/move", {
@@ -149,7 +148,7 @@ async function doMove(uci) {
     }
 }
 
-// Thêm nút undo
+// Undo button
 const undoBtn = document.getElementById("undo");
 if (undoBtn) {
     undoBtn.onclick = async () => {
@@ -165,4 +164,5 @@ if (undoBtn) {
         }
     };
 }
+
 loadState();
